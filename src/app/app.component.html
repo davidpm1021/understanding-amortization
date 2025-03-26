@@ -1,0 +1,148 @@
+<!-- Loan Calculator -->
+<div class="container">
+  <h1>Loan Amortization Calculator</h1>
+  
+  <div class="calculator-container">
+    <div class="calculator-form" [class.collapsed]="!isFormVisible">
+      <div class="form-group">
+        <label for="loanAmount">Loan Amount ($):</label>
+        <input 
+          type="number" 
+          id="loanAmount" 
+          [(ngModel)]="loanAmount" 
+          placeholder="Enter loan amount"
+          required>
+      </div>
+
+      <div class="form-group">
+        <label for="interestRate">Annual Interest Rate (%):</label>
+        <input 
+          type="number" 
+          id="interestRate" 
+          [(ngModel)]="interestRate" 
+          placeholder="Enter interest rate"
+          step="0.1"
+          required>
+      </div>
+
+      <div class="form-group">
+        <label for="loanTerm">Loan Term (Years):</label>
+        <input 
+          type="number" 
+          id="loanTerm" 
+          [(ngModel)]="loanTerm" 
+          placeholder="Enter loan term"
+          required>
+      </div>
+
+      <div class="extra-payments">
+        <h3>Extra Payments</h3>
+        
+        <div class="form-group">
+          <label for="monthlyExtraPayment">Monthly Extra Payment ($):</label>
+          <input 
+            type="number" 
+            id="monthlyExtraPayment" 
+            [(ngModel)]="monthlyExtraPayment" 
+            placeholder="Enter monthly extra payment"
+            min="0">
+        </div>
+
+        <div class="form-group">
+          <label for="oneTimeExtraPayment">One-time Extra Payment ($):</label>
+          <input 
+            type="number" 
+            id="oneTimeExtraPayment" 
+            [(ngModel)]="oneTimeExtraPayment" 
+            placeholder="Enter one-time extra payment"
+            min="0">
+        </div>
+
+        <div class="form-group" *ngIf="oneTimeExtraPayment > 0">
+          <label for="oneTimeExtraPaymentMonth">Apply One-time Payment in Month:</label>
+          <input 
+            type="number" 
+            id="oneTimeExtraPaymentMonth" 
+            [(ngModel)]="oneTimeExtraPaymentMonth" 
+            placeholder="Enter month number"
+            min="1"
+            [max]="loanTerm * 12">
+        </div>
+      </div>
+
+      <div class="error-message" *ngIf="hasError">
+        {{ errorMessage }}
+      </div>
+
+      <button 
+        class="calculate-button" 
+        (click)="calculateLoan()" 
+        [disabled]="isCalculating">
+        {{ isCalculating ? 'Calculating...' : 'Calculate' }}
+      </button>
+    </div>
+
+    <div class="form-toggle" *ngIf="amortizationSchedule.length > 0">
+      <button (click)="toggleForm()" class="toggle-button">
+        {{ isFormVisible ? 'Hide Calculator' : 'Show Calculator' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Loan Summary Bar -->
+  <div class="summary-bar" *ngIf="amortizationSchedule.length > 0">
+    <div class="summary-item">
+      <div class="summary-label">Monthly Payment</div>
+      <div class="summary-value">${{ monthlyPayment | number:'1.2-2' }}</div>
+    </div>
+    <div class="summary-item">
+      <div class="summary-label">Total Payment</div>
+      <div class="summary-value">${{ totalPayment | number:'1.2-2' }}</div>
+    </div>
+    <div class="summary-item">
+      <div class="summary-label">Total Interest</div>
+      <div class="summary-value">${{ totalInterest | number:'1.2-2' }}</div>
+    </div>
+    <div class="summary-item" *ngIf="payoffDate">
+      <div class="summary-label">Payoff Date</div>
+      <div class="summary-value">{{ formatDate(payoffDate) }}</div>
+    </div>
+    <div class="summary-item" *ngIf="totalSaved">
+      <div class="summary-label">Total Saved</div>
+      <div class="summary-value">${{ totalSaved | number:'1.2-2' }}</div>
+    </div>
+  </div>
+
+  <!-- Amortization Schedule -->
+  <div class="amortization-schedule" *ngIf="amortizationSchedule.length > 0">
+    <h2>Amortization Schedule</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Month</th>
+          <th>Payment Amount</th>
+          <th>Principal</th>
+          <th>Interest</th>
+          <th>Extra Payment</th>
+          <th>Total Payment</th>
+          <th>Remaining Balance</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let payment of amortizationSchedule.slice(0, displayedRows)">
+          <td>{{ payment.paymentNumber }}</td>
+          <td>${{ payment.paymentAmount | number:'1.2-2' }}</td>
+          <td>${{ payment.principal | number:'1.2-2' }}</td>
+          <td>${{ payment.interest | number:'1.2-2' }}</td>
+          <td>${{ payment.extraPayment || 0 | number:'1.2-2' }}</td>
+          <td>${{ payment.totalPayment | number:'1.2-2' }}</td>
+          <td>${{ payment.remainingBalance | number:'1.2-2' }}</td>
+        </tr>
+      </tbody>
+    </table>
+    
+    <div class="load-more" *ngIf="displayedRows < amortizationSchedule.length">
+      <button (click)="loadMoreRows()">Show More Payments</button>
+    </div>
+  </div>
+</div>
