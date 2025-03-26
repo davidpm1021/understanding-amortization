@@ -1,7 +1,5 @@
-<!-- Loan Calculator -->
+<app-header></app-header>
 <div class="container">
-  <h1>Loan Amortization Calculator</h1>
-  
   <div class="calculator-container">
     <div class="calculator-form" [class.collapsed]="!isFormVisible">
       <div class="form-group">
@@ -96,20 +94,16 @@
       <div class="summary-value">${{ monthlyPayment | number:'1.2-2' }}</div>
     </div>
     <div class="summary-item">
+      <div class="summary-label">Total Interest</div>
+      <div class="summary-value">${{ totalInterest | number:'1.2-2' }}</div>
+    </div>
+    <div class="summary-item">
       <div class="summary-label">Total Payment</div>
       <div class="summary-value">${{ totalPayment | number:'1.2-2' }}</div>
     </div>
     <div class="summary-item">
-      <div class="summary-label">Total Interest</div>
-      <div class="summary-value">${{ totalInterest | number:'1.2-2' }}</div>
-    </div>
-    <div class="summary-item" *ngIf="payoffDate">
-      <div class="summary-label">Payoff Date</div>
-      <div class="summary-value">{{ formatDate(payoffDate) }}</div>
-    </div>
-    <div class="summary-item" *ngIf="totalSaved">
-      <div class="summary-label">Total Saved</div>
-      <div class="summary-value">${{ totalSaved | number:'1.2-2' }}</div>
+      <div class="summary-label">Months to Payoff</div>
+      <div class="summary-value">{{ monthsToPayoff }}</div>
     </div>
   </div>
 

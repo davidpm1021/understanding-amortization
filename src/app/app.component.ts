@@ -2,6 +2,7 @@ import { Component, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angula
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Chart, ChartConfiguration } from 'chart.js/auto';
+import { HeaderComponent } from './header/header.component';
 
 interface Payment {
   paymentNumber: number;
@@ -16,7 +17,7 @@ interface Payment {
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, FormsModule, DecimalPipe],
+  imports: [CommonModule, FormsModule, DecimalPipe, HeaderComponent],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
@@ -48,7 +49,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   monthlyExtraPayment: number = 0;
   oneTimeExtraPayment: number = 0;
   oneTimeExtraPaymentMonth: number = 1;
-  payoffDate?: Date;
+  monthsToPayoff: number = 0;
   totalSaved?: number;
 
   // Theme
@@ -77,108 +78,23 @@ export class AppComponent implements OnInit, AfterViewInit {
     this.initializeCharts();
   }
 
-  calculateLoan() {
-    if (!this.isValidInput()) {
-      return;
-    }
-
-    this.isCalculating = true;
+  validateInputs(): boolean {
     this.hasError = false;
     this.errorMessage = '';
 
-    try {
-      const monthlyRate = (this.interestRate / 100) / 12;
-      const numberOfPayments = this.loanTerm * 12;
-      const monthlyPayment = this.calculateMonthlyPayment(this.loanAmount, monthlyRate, numberOfPayments);
-
-      this.monthlyPayment = monthlyPayment;
-      this.generateAmortizationSchedule(monthlyRate, numberOfPayments);
-
-      this.totalPayment = this.amortizationSchedule.reduce((sum, payment) => sum + payment.totalPayment, 0);
-      this.totalInterest = this.totalPayment - this.loanAmount;
-
-      // Calculate payoff date and savings
-      const originalPayments = numberOfPayments;
-      const actualPayments = this.amortizationSchedule.filter(p => p.remainingBalance > 0).length;
-      const monthsSaved = originalPayments - actualPayments;
-      
-      this.payoffDate = new Date();
-      this.payoffDate.setMonth(this.payoffDate.getMonth() + actualPayments);
-      
-      const originalTotalPayment = this.monthlyPayment * numberOfPayments;
-      this.totalSaved = originalTotalPayment - this.totalPayment;
-
-      this.resetDisplayedRows();
-      this.updateCharts();
-      
-      // Automatically collapse the form after calculation
-      this.isFormVisible = false;
-    } catch (error) {
+    if (this.loanAmount <= 0) {
       this.hasError = true;
-      this.errorMessage = 'An error occurred while calculating the loan. Please check your inputs.';
-    } finally {
-      this.isCalculating = false;
-    }
-  }
-
-  private calculateMonthlyPayment(principal: number, monthlyRate: number, numberOfPayments: number): number {
-    return principal * (monthlyRate * Math.pow(1 + monthlyRate, numberOfPayments)) 
-      / (Math.pow(1 + monthlyRate, numberOfPayments) - 1);
-  }
-
-  private generateAmortizationSchedule(monthlyRate: number, numberOfPayments: number) {
-    this.amortizationSchedule = [];
-    let remainingBalance = this.loanAmount;
-
-    for (let i = 1; i <= numberOfPayments && remainingBalance > 0; i++) {
-      const interest = remainingBalance * monthlyRate;
-      let principal = this.monthlyPayment - interest;
-      let extraPayment = 0;
-
-      // Handle extra payments
-      if (this.monthlyExtraPayment > 0) {
-        extraPayment = this.monthlyExtraPayment;
-        principal += extraPayment;
-      }
-
-      if (i === this.oneTimeExtraPaymentMonth && this.oneTimeExtraPayment > 0) {
-        extraPayment += this.oneTimeExtraPayment;
-        principal += this.oneTimeExtraPayment;
-      }
-
-      // Adjust final payment if needed
-      if (principal > remainingBalance) {
-        principal = remainingBalance;
-      }
-
-      remainingBalance -= principal;
-
-      this.amortizationSchedule.push({
-        paymentNumber: i,
-        paymentAmount: this.monthlyPayment,
-        principal,
-        interest,
-        extraPayment: extraPayment > 0 ? extraPayment : undefined,
-        totalPayment: this.monthlyPayment + extraPayment,
-        remainingBalance
-      });
-    }
-  }
-
-  private isValidInput(): boolean {
-    if (!this.loanAmount || this.loanAmount < 1000 || this.loanAmount > 10000000) {
-      this.hasError = true;
-      this.errorMessage = 'Loan amount must be between $1,000 and $10,000,000';
+      this.errorMessage = 'Please enter a positive loan amount';
       return false;
     }
 
-    if (!this.interestRate || this.interestRate < 0.1 || this.interestRate > 30) {
+    if (this.interestRate < 0) {
       this.hasError = true;
-      this.errorMessage = 'Interest rate must be between 0.1% and 30%';
+      this.errorMessage = 'Please enter a positive interest rate';
       return false;
     }
 
-    if (!this.loanTerm || this.loanTerm < 1 || this.loanTerm > 40) {
+    if (this.loanTerm <= 0 || this.loanTerm > 40) {
       this.hasError = true;
       this.errorMessage = 'Loan term must be between 1 and 40 years';
       return false;
@@ -203,6 +119,116 @@ export class AppComponent implements OnInit, AfterViewInit {
     }
 
     return true;
+  }
+
+  calculateLoan() {
+    if (!this.validateInputs()) {
+      return;
+    }
+
+    this.isCalculating = true;
+    this.hasError = false;
+    this.errorMessage = '';
+
+    try {
+      const monthlyRate = this.interestRate / 100 / 12;
+      const numberOfPayments = this.loanTerm * 12;
+      let monthlyPayment: number;
+
+      if (this.interestRate === 0) {
+        monthlyPayment = this.loanAmount / numberOfPayments;
+      } else {
+        monthlyPayment = this.loanAmount * 
+          (monthlyRate * Math.pow(1 + monthlyRate, numberOfPayments)) / 
+          (Math.pow(1 + monthlyRate, numberOfPayments) - 1);
+      }
+
+      let balance = this.loanAmount;
+      let totalInterest = 0;
+      let schedule: Payment[] = [];
+      let isPaidOff = false;
+
+      for (let month = 1; month <= numberOfPayments; month++) {
+        if (balance <= 0) {
+          isPaidOff = true;
+          break;
+        }
+
+        let extraPayment = 0;
+
+        // Add monthly extra payment
+        if (this.monthlyExtraPayment > 0) {
+          extraPayment += this.monthlyExtraPayment;
+        }
+
+        // Add one-time extra payment
+        if (this.oneTimeExtraPaymentMonth === month && this.oneTimeExtraPayment > 0) {
+          extraPayment += this.oneTimeExtraPayment;
+        }
+
+        // Apply extra payment to principal BEFORE calculating interest
+        if (extraPayment > 0) {
+          balance -= extraPayment;
+        }
+
+        const interestPayment = balance * monthlyRate;
+        let principalPayment = monthlyPayment - interestPayment;
+
+        // Ensure we don't overpay
+        if (principalPayment > balance) {
+          principalPayment = balance;
+        }
+
+        balance -= principalPayment;
+        totalInterest += interestPayment;
+
+        schedule.push({
+          paymentNumber: month,
+          paymentAmount: monthlyPayment,
+          principal: principalPayment,
+          interest: interestPayment,
+          extraPayment: extraPayment > 0 ? extraPayment : undefined,
+          totalPayment: monthlyPayment + extraPayment,
+          remainingBalance: Math.max(0, balance)
+        });
+      }
+
+      // Calculate savings
+      const originalTotalInterest = this.calculateTotalInterest(this.loanAmount, monthlyRate, numberOfPayments);
+      const savings = originalTotalInterest - totalInterest;
+
+      this.monthlyPayment = monthlyPayment;
+      this.totalPayment = this.loanAmount + totalInterest;
+      this.totalInterest = totalInterest;
+      this.amortizationSchedule = schedule;
+      this.monthsToPayoff = Math.ceil(schedule.length);
+      this.totalSaved = savings;
+
+      this.resetDisplayedRows();
+      this.updateCharts();
+      
+      // Automatically collapse the form after calculation
+      this.isFormVisible = false;
+    } catch (error) {
+      this.hasError = true;
+      this.errorMessage = 'An error occurred while calculating the loan. Please check your inputs.';
+    } finally {
+      this.isCalculating = false;
+    }
+  }
+
+  private calculateTotalInterest(principal: number, monthlyRate: number, numberOfPayments: number): number {
+    const monthlyPayment = this.calculateMonthlyPayment(principal, monthlyRate, numberOfPayments);
+    return (monthlyPayment * numberOfPayments) - principal;
+  }
+
+  private calculateMonthlyPayment(principal: number, monthlyRate: number, numberOfPayments: number): number {
+    if (monthlyRate === 0) {
+      return principal / numberOfPayments;
+    }
+    return principal * 
+      (monthlyRate * Math.pow(1 + monthlyRate, numberOfPayments)) / 
+      (Math.pow(1 + monthlyRate, numberOfPayments) - 1);
   }
 
   loadMoreRows() {

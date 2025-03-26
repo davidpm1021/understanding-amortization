@@ -1,33 +1,235 @@
-/* Import Roboto font */
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+/* Import fonts */
+@import url('https://fonts.googleapis.com/css2?family=PT+Sans:wght@700&family=Montserrat:wght@400;500;700&display=swap');
 
-/* Reset default styles */
-* {
+/* CSS Variables */
+:root {
+  /* Brand Colors */
+  --color-royal-blue: #1f3b9b;
+  --color-navy-blue: #0b1541;
+  --color-bright-blue: #275ce4;
+  --color-sky-blue: #1db8e8;
+  --color-gold: #f4ad00;
+  --color-orange: #f78219;
+
+  /* Light/Neutral Shades */
+  --color-soft-blue: #edfaff;
+  --color-light-gray-blue: #d2d8e9;
+  --color-ice-blue: #d2eff9;
+
+  /* Typography */
+  --font-heading: 'PT Sans', sans-serif;
+  --font-body: 'Montserrat', sans-serif;
+  --font-size-h1: 48px;
+  --font-size-h2: 36px;
+  --font-size-h3: 24px;
+  --font-size-h4: 20px;
+  --font-size-h5: 18px;
+  --font-size-h6: 16px;
+  --font-size-large: 20px;
+  --font-size-regular: 18px;
+  --font-size-small: 14px;
+
+  /* Spacing */
+  --spacing-xs: 0.5rem;
+  --spacing-sm: 0.75rem;
+  --spacing-md: 1.5rem;
+  --spacing-lg: 2rem;
+  --spacing-xl: 3rem;
+
+  /* Border Radius */
+  --border-radius-sm: 4px;
+  --border-radius-md: 6px;
+  --border-radius-lg: 12px;
+
+  /* Shadows */
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+/* Base Styles */
+html {
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+body {
+  font-family: var(--font-body);
+  font-size: var(--font-size-regular);
+  line-height: 1.4;
+  color: var(--color-navy-blue);
+  background-color: var(--color-soft-blue);
   margin: 0;
   padding: 0;
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  margin: 0 0 var(--spacing-md);
+  line-height: 1.2;
+}
+
+h1 {
+  font-size: var(--font-size-h1);
+  color: var(--color-royal-blue);
+}
+
+h2 {
+  font-size: var(--font-size-h2);
+  color: var(--color-navy-blue);
+}
+
+h3 {
+  font-size: var(--font-size-h3);
+  color: var(--color-royal-blue);
+}
+
+h4 {
+  font-size: var(--font-size-h4);
+  text-transform: uppercase;
+  color: var(--color-navy-blue);
+}
+
+h5 {
+  font-size: var(--font-size-h5);
+  text-transform: uppercase;
+  color: var(--color-navy-blue);
+}
+
+h6 {
+  font-size: var(--font-size-h6);
+  text-transform: uppercase;
+  color: var(--color-navy-blue);
+}
+
+p {
+  margin: 0 0 var(--spacing-md);
+  line-height: 1.4;
+}
+
+/* Container */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--spacing-md);
+}
+
+/* Form Elements */
+input, select, textarea {
+  font-family: var(--font-body);
+  font-size: var(--font-size-regular);
+  padding: var(--spacing-sm);
+  border: 2px solid var(--color-light-gray-blue);
+  border-radius: var(--border-radius-md);
+  transition: all 0.2s ease;
+  width: 100%;
   box-sizing: border-box;
 }
 
-/* Global styles */
-html, body {
-  height: 100%;
-  font-family: 'Roboto', sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--color-bright-blue);
+  box-shadow: 0 0 0 2px rgba(39, 92, 228, 0.1);
 }
 
-/* Apply CSS variables globally */
-:root {
-  --primary-color: #2196f3;
-  --primary-dark: #1976d2;
-  --primary-light: #bbdefb;
-  --accent-color: #ff4081;
-  --text-color: #333;
-  --text-light: #666;
-  --background-color: #f5f5f5;
-  --card-background: #ffffff;
-  --border-color: #e0e0e0;
-  --shadow-color: rgba(0, 0, 0, 0.1);
-  --success-color: #4caf50;
-  --error-color: #f44336;
+/* Buttons */
+button {
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: var(--font-size-regular);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--border-radius-md);
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+}
+
+button.primary {
+  background-color: var(--color-bright-blue);
+  color: white;
+}
+
+button.primary:hover {
+  background-color: var(--color-royal-blue);
+  transform: translateY(-1px);
+}
+
+button.secondary {
+  background-color: transparent;
+  border: 2px solid var(--color-bright-blue);
+  color: var(--color-bright-blue);
+}
+
+button.secondary:hover {
+  background-color: var(--color-soft-blue);
+  transform: translateY(-1px);
+}
+
+/* Tables */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: var(--spacing-md) 0;
+}
+
+th {
+  background-color: var(--color-soft-blue);
+  color: var(--color-navy-blue);
+  font-weight: 700;
+  text-align: left;
+  padding: var(--spacing-sm);
+  border-bottom: 2px solid var(--color-light-gray-blue);
+}
+
+td {
+  padding: var(--spacing-sm);
+  border-bottom: 1px solid var(--color-light-gray-blue);
+}
+
+tr:hover {
+  background-color: var(--color-soft-blue);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  html {
+    font-size: 14px;
+  }
+
+  .container {
+    padding: 0 var(--spacing-sm);
+  }
+
+  h1 {
+    font-size: calc(var(--font-size-h1) * 0.8);
+  }
+
+  h2 {
+    font-size: calc(var(--font-size-h2) * 0.8);
+  }
+
+  h3 {
+    font-size: calc(var(--font-size-h3) * 0.8);
+  }
+}
+
+@media (max-width: 480px) {
+  html {
+    font-size: 12px;
+  }
+
+  h1 {
+    font-size: calc(var(--font-size-h1) * 0.6);
+  }
+
+  h2 {
+    font-size: calc(var(--font-size-h2) * 0.6);
+  }
+
+  h3 {
+    font-size: calc(var(--font-size-h3) * 0.6);
+  }
 } 
