@@ -3,13 +3,17 @@
   <div class="calculator-container">
     <div class="calculator-form" [class.collapsed]="!isFormVisible">
       <div class="form-group">
-        <label for="loanAmount">Loan Amount ($):</label>
-        <input 
-          type="number" 
-          id="loanAmount" 
-          [(ngModel)]="loanAmount" 
-          placeholder="Enter loan amount"
-          required>
+        <label for="loanAmount">Loan Amount</label>
+        <div class="input-group">
+          <span class="input-group-text">$</span>
+          <input 
+            type="text" 
+            class="form-control" 
+            id="loanAmount" 
+            [(ngModel)]="loanAmount" 
+            (input)="formatLoanAmount($event)"
+            placeholder="Enter loan amount">
+        </div>
       </div>
 
       <div class="form-group">

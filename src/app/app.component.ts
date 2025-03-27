@@ -131,19 +131,23 @@ export class AppComponent implements OnInit, AfterViewInit {
     this.errorMessage = '';
 
     try {
-      const monthlyRate = this.interestRate / 100 / 12;
+      // Convert formatted loan amount to number
+      const numericLoanAmount = Number(this.loanAmount.toString().replace(/,/g, ''));
+      
+      // Round monthly rate to 6 decimal places
+      const monthlyRate = Number((this.interestRate / 100 / 12).toFixed(6));
       const numberOfPayments = this.loanTerm * 12;
       let monthlyPayment: number;
 
       if (this.interestRate === 0) {
-        monthlyPayment = this.loanAmount / numberOfPayments;
+        monthlyPayment = numericLoanAmount / numberOfPayments;
       } else {
-        monthlyPayment = this.loanAmount * 
+        monthlyPayment = numericLoanAmount * 
           (monthlyRate * Math.pow(1 + monthlyRate, numberOfPayments)) / 
           (Math.pow(1 + monthlyRate, numberOfPayments) - 1);
       }
 
-      let balance = this.loanAmount;
+      let balance = numericLoanAmount;
       let totalInterest = 0;
       let schedule: Payment[] = [];
       let isPaidOff = false;
@@ -194,11 +198,11 @@ export class AppComponent implements OnInit, AfterViewInit {
       }
 
       // Calculate savings
-      const originalTotalInterest = this.calculateTotalInterest(this.loanAmount, monthlyRate, numberOfPayments);
+      const originalTotalInterest = this.calculateTotalInterest(numericLoanAmount, monthlyRate, numberOfPayments);
       const savings = originalTotalInterest - totalInterest;
 
       this.monthlyPayment = monthlyPayment;
-      this.totalPayment = this.loanAmount + totalInterest;
+      this.totalPayment = numericLoanAmount + totalInterest;
       this.totalInterest = totalInterest;
       this.amortizationSchedule = schedule;
       this.monthsToPayoff = Math.ceil(schedule.length);
@@ -400,5 +404,16 @@ export class AppComponent implements OnInit, AfterViewInit {
 
   toggleForm() {
     this.isFormVisible = !this.isFormVisible;
+  }
+
+  formatLoanAmount(event: any): void {
+    // Remove all non-numeric characters
+    let value = event.target.value.replace(/[^0-9]/g, '');
+    
+    // Convert to number
+    let number = parseInt(value, 10);
+    
+    // Format with commas
+    this.loanAmount = number.toLocaleString();
   }
 }
