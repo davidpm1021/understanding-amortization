@@ -158,6 +158,8 @@ export class AppComponent implements OnInit, AfterViewInit {
           break;
         }
 
+        const interestPayment = balance * monthlyRate;
+        let principalPayment = monthlyPayment - interestPayment;
         let extraPayment = 0;
 
         // Add monthly extra payment
@@ -170,20 +172,14 @@ export class AppComponent implements OnInit, AfterViewInit {
           extraPayment += this.oneTimeExtraPayment;
         }
 
-        // Apply extra payment to principal BEFORE calculating interest
+        // Apply regular principal payment
+        balance -= principalPayment;
+
+        // Apply extra payment after interest calculation
         if (extraPayment > 0) {
           balance -= extraPayment;
         }
 
-        const interestPayment = balance * monthlyRate;
-        let principalPayment = monthlyPayment - interestPayment;
-
-        // Ensure we don't overpay
-        if (principalPayment > balance) {
-          principalPayment = balance;
-        }
-
-        balance -= principalPayment;
         totalInterest += interestPayment;
 
         schedule.push({
@@ -410,10 +406,12 @@ export class AppComponent implements OnInit, AfterViewInit {
     // Remove all non-numeric characters
     let value = event.target.value.replace(/[^0-9]/g, '');
     
-    // Convert to number
-    let number = parseInt(value, 10);
-    
-    // Format with commas
-    this.loanAmount = number.toLocaleString();
+    // Convert to number and store the numeric value
+    this.loanAmount = parseInt(value, 10);
+  }
+
+  // Add a getter for formatted display
+  get formattedLoanAmount(): string {
+    return this.loanAmount.toLocaleString();
   }
 }

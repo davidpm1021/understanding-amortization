@@ -3,14 +3,14 @@
   <div class="calculator-container">
     <div class="calculator-form" [class.collapsed]="!isFormVisible">
       <div class="form-group">
-        <label for="loanAmount">Loan Amount</label>
+        <label for="loanAmount">Loan Amount ($)</label>
         <div class="input-group">
-          <span class="input-group-text">$</span>
           <input 
             type="text" 
             class="form-control" 
             id="loanAmount" 
-            [(ngModel)]="loanAmount" 
+            [ngModel]="formattedLoanAmount"
+            (ngModelChange)="loanAmount = $event"
             (input)="formatLoanAmount($event)"
             placeholder="Enter loan amount">
         </div>
